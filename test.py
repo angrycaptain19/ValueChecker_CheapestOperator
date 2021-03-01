@@ -32,11 +32,11 @@ class test_cheapest_operator_utility(unittest.TestCase):
         self.assertEqual(cheapest_operator_utility.find_cheapest_operator('123456789',path), 'Invalid Phone Number')
         
     def test_6(self):
-        path = os.getcwd() +'\\Test Data\\Data 1\\'
+        path = os.getcwd() +'\\Test Data 1\\'
         self.assertEqual(cheapest_operator_utility.find_cheapest_operator('222923654234',path), 'No files found')
            
     def test_7(self):
-        path = os.getcwd() +'\\Test Data\\Data 2\\' 
+        path = os.getcwd() +'\\Test Data 2\\' 
         self.assertEqual(cheapest_operator_utility.find_cheapest_operator('222923654234',path), 'All files are invalid')
         
     def test_8(self):
