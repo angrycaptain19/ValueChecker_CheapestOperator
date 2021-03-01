@@ -11,14 +11,12 @@ import numpy as np
 import re
 
 
-# data_path = os.getcwd() + '\\Data\\'
-
-
 class cheapest_operator_utility:
     
 #########################################################################################            
 # Function Name - generate_data
-# Description   - Generate 'n' lists of operator with random prefixes and rates ()
+# Description   - Generate 'n' lists of operator with random prefixes and rates 
+#                 (Made for data generation purpose only)
 # Parameters    - 
 #       n - Number of operator Lists to generate
 # 
@@ -38,23 +36,6 @@ class cheapest_operator_utility:
             df['rate'] = pd.Series(np.random.uniform(0.1,10.0,5000)).round(2)
             df.prefix = df.prefix.apply(lambda x : str(x))
             df.to_csv(data_path + 'operator_'+str(opr+1)+'.csv',index=False)
-        
-            
-#########################################################################################            
-# Function Name - pick_longest_matching_prefix
-# Description   - From passed dataframe and number, the function calculates longest matching prefix
-# Parameters    -  
-#       file_df - Dataframe containing prefix and rate
-#       numbr   - Inputted Phone no.  
-#########################################################################################
-    
-    def pick_longest_matching_prefix(file_df,numbr):
-        
-        file_df['prefix'] = file_df['prefix'].apply(lambda x : re.sub('\D', '', str(x)))
-        file_df['flag'] = file_df['prefix'].apply(lambda x : np.where(re.search('^'+str(x), str(numbr)) == None , 0 ,1 ))
-        file_df['len'] = file_df['prefix'].apply(lambda x : len(str(x)))
-        file_df = file_df[(file_df['flag'] == 1)].sort_values(by=['len','rate'],ascending = [False,True]).head(1)
-        return file_df[['prefix','rate','operator']]
     
     
 #########################################################################################            
@@ -79,15 +60,39 @@ class cheapest_operator_utility:
         
         file_df = file_df[[i for i in list(file_df.columns) if i in ['prefix','rate']]]
 
-        # Csv is not as per the format
+        # Check if csv is as per the required format
         if  ('prefix' not in list(file_df.columns)) | ('rate' not in list(file_df.columns)):
             print(file_name,'is not as per the format')
             return None , 0
         
         file_df['operator'] = operator_name
         
-        return file_df , 1
-   
+        return file_df , 1  
+
+          
+#########################################################################################            
+# Function Name - pick_longest_matching_prefix
+# Description   - From passed dataframe and number, the function calculates longest matching prefix
+# Parameters    -  
+#       file_df - Dataframe containing prefix and rate
+#       numbr   - Inputted Phone no.  
+#########################################################################################
+    
+    def pick_longest_matching_prefix(file_df,numbr):
+        
+        # Keeping just the numbers in prefix column
+        file_df['prefix'] = file_df['prefix'].apply(lambda x : re.sub('\D', '', str(x)))
+        
+        # Flagging all prefixed in loaded file to inputted number
+        file_df['flag'] = file_df['prefix'].apply(lambda x : np.where(re.search('^'+str(x), str(numbr)) == None , 0 ,1 ))
+        
+        # Calculating the length of the prefix
+        file_df['len'] = file_df['prefix'].apply(lambda x : len(str(x)))
+        
+        # Filtering flagged prefixes, sorting them in descending order of length and picking the top prefix with respective rate
+        file_df = file_df[(file_df['flag'] == 1)].sort_values(by=['len','rate'],ascending = [False,True]).head(1)
+        return file_df[['prefix','rate','operator']]
+ 
     
 #########################################################################################            
 # Function Name - find_cheapest_operator
@@ -119,6 +124,7 @@ class cheapest_operator_utility:
         error_files = []
         tmp = pd.DataFrame()
         
+        # Looping over list of files present in specified data path
         for file in dir_list:
                     
             opr_df, error_code = cheapest_operator_utility.load_file(file, path)
@@ -134,7 +140,7 @@ class cheapest_operator_utility:
         if len(error_files) == len(dir_list):
             return 'All files are invalid'
         
-        # Return 
+        # Return operator name (if there is any)
         tmp = tmp.sort_values('rate',ascending=True).head(1)['operator'].reset_index(drop=True)
         if tmp.shape[0] == 0:
             return 'No operators available'
